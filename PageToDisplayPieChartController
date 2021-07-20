@@ -1,0 +1,45 @@
+global with sharing class PageToDisplayPieChartController 
+{
+    public list<SelectOption> options;
+    public List<RecordType> selectedRecordType;
+    global String selectedValue{get;set;}
+    public List<Account> allAccounts;
+
+    public list<SelectOption> getRecordTypes()
+    {
+        options = new list<SelectOption>();
+        
+        selectedRecordType = [SELECT Id, Name FROM RecordType WHERE sObjectType = 'Account'];
+        for(RecordType sRecordType : selectedRecordType)
+        {
+            options.add(new SelectOption(sRecordType.Id, sRecordType.Name));
+        }
+        return options;
+    }
+    
+    /*public void getAccts()
+    {
+        If(selectedValue=='First Record Type')
+        {
+            allAccounts = [Select ];
+        }
+    }*/
+    
+    @RemoteAction
+    global static List<AggregateResult> getAllAccounts()
+    {
+       /*If(selectedValue=='First Record Type')
+        {
+            List<AggregateResult> accounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
+                                          From Account Where BillingCountry != null AND RecordType=:selectedValue 
+                                              Group By BillingCountry ];
+        }*/
+        
+        List<AggregateResult> accounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
+                                          From Account Where BillingCountry != null
+                                          Group By BillingCountry];
+        return accounts;
+    }
+    
+      
+}
