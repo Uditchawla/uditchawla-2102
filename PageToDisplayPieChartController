@@ -2,9 +2,13 @@ global with sharing class PageToDisplayPieChartController
 {
     public list<SelectOption> options;
     public List<RecordType> selectedRecordType;
-    global String selectedValue{get;set;}
+    global string selectedValue{get;set;}
+    public String acctCountry{get;set;}
+    public integer acctCount{get;set;}
     public List<Account> allAccounts;
-
+    public List<String> listOfAllAccounts{get;set;}
+    public List<Integer> countOfAllAccounts{get;set;}
+    
     public list<SelectOption> getRecordTypes()
     {
         options = new list<SelectOption>();
@@ -17,29 +21,40 @@ global with sharing class PageToDisplayPieChartController
         return options;
     }
     
-    /*public void getAccts()
+    public void getAccts()
     {
-        If(selectedValue=='First Record Type')
+       /* If(selectedValue=='0122x0000000aVTAAY' || selectedValue=='0122x0000000aVYAAY')
         {
-            allAccounts = [Select ];
-        }
-    }*/
-    
-    @RemoteAction
-    global static List<AggregateResult> getAllAccounts()
-    {
-       /*If(selectedValue=='First Record Type')
-        {
-            List<AggregateResult> accounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
-                                          From Account Where BillingCountry != null AND RecordType=:selectedValue 
-                                              Group By BillingCountry ];
-        }*/
+            System.debug('selectedValue'+selectedValue);*/
+            List<AggregateResult> allAccounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
+                                                 From Account Where BillingCountry != null 
+                                                 Group By BillingCountry];
+            
+            For(AggregateResult ag:allAccounts)
+            {
+                acctCountry = String.valueOf(ag.get('Country'));
+                acctCount = Integer.valueOf(ag.get('NumberOfAccounts'));
+                System.debug('acctCountry'+acctCountry);
+                System.debug('acctCount'+acctCount);
+            }
         
-        List<AggregateResult> accounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
-                                          From Account Where BillingCountry != null
-                                          Group By BillingCountry];
-        return accounts;
+        If(acctCountry!= NUll && acctCount!=Null)
+        {
+            listOfAllAccounts.add(acctCountry);
+            countOfAllAccounts.add(acctCount);
+        }
+            
+        //}
     }
     
-      
+    /*@RemoteAction
+global static List<AggregateResult> getAllAccounts()
+{
+List<AggregateResult> accounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
+From Account Where BillingCountry != null
+Group By BillingCountry];
+return accounts;
+}*/
+    
+    
 }
