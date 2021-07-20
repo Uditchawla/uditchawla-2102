@@ -1,0 +1,63 @@
+<apex:page controller="PageToDisplayPieChartController" showHeader="true" sidebar="false">
+    
+    <apex:form >
+        <apex:pageBlock >
+            <apex:pageBlockSection title="Please select Record Type: " collapsible="false">
+                <apex:selectList value="{!selectedValue}" multiselect="false" size="1" >
+                    <apex:selectOptions value="{!RecordTypes}"/>
+                    <apex:actionSupport event="onchange" reRender="pChart1,pChart2" />
+                </apex:selectList>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+    
+    <apex:outputPanel id="pChart1">
+        <apex:pageBlock >
+            
+            
+            
+            <div id="myPieChart" style="width: 900px; height: 700px;"/>
+        </apex:pageBlock>
+    </apex:outputPanel>
+    
+    <!-- SECOND PIE CHART -->
+    
+    <apex:outputPanel id="pChart2">
+        <apex:pageBlock >
+        
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"/>
+        <script type="text/javascript">
+            
+        google.charts.load('current', {packages: ['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+        
+        var accData; 
+        PageToDisplayPieChartController.getAllAccounts(function(result, event){
+            accData  = result; 
+        },{escape:true});
+        
+        
+        function drawChart() {
+            
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Country');
+            data.addColumn('number', 'Number of Accounts');
+            
+            for(i = 0; i< accData.length; i++){
+                data.addRow([accData[i].Country, accData[i].NumberOfAccounts]);
+            }
+            
+            var options = {
+                'title':'Accounts Group by Country',
+                pieHole: 0.4,};
+            
+            var chart = new google.visualization.PieChart(document.getElementById('myPieChart'));
+            chart.draw(data, options);
+        }
+        </script>
+        
+        <div id="myPieChart" style="width: 900px; height: 700px;"/>
+    </apex:pageBlock>
+    </apex:outputPanel>
+ 
+</apex:page>
