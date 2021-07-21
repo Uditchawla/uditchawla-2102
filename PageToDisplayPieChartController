@@ -3,58 +3,56 @@ global with sharing class PageToDisplayPieChartController
     public list<SelectOption> options;
     public List<RecordType> selectedRecordType;
     global string selectedValue{get;set;}
-    public String acctCountry{get;set;}
-    public integer acctCount{get;set;}
-    public List<Account> allAccounts;
-    public List<String> listOfAllAccounts{get;set;}
-    public List<Integer> countOfAllAccounts{get;set;}
+    public List<String> primaryList{get;set;}
+    public Map<String, Integer> dataMap{get;set;} 
+    public String dataMapJSON{get;set;}
+    
+    public List<AggregateResult> allAccounts{get;set;}
+    
+    public PageToDisplayPieChartController()
+    {
+        dataMap = new Map<String, Integer>();
+        allAccounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
+                                                 From Account Where BillingCountry != null 
+                                                 Group By BillingCountry];
+        
+        For(AggregateResult thisAggregateResult:allAccounts)
+        {
+            dataMap.put((String)thisAggregateResult.get('Country'), (Integer) thisAggregateResult.get('NumberOfAccounts'));
+        }
+        System.debug('dataMap in constructor'+dataMap);
+    }
     
     public list<SelectOption> getRecordTypes()
     {
         options = new list<SelectOption>();
+        options.add(new selectOption('', '-- All Accounts --'));
         
         selectedRecordType = [SELECT Id, Name FROM RecordType WHERE sObjectType = 'Account'];
         for(RecordType sRecordType : selectedRecordType)
         {
             options.add(new SelectOption(sRecordType.Id, sRecordType.Name));
         }
+        System.debug('Options@@'+options);
         return options;
+        
     }
     
     public void getAccts()
     {
-       /* If(selectedValue=='0122x0000000aVTAAY' || selectedValue=='0122x0000000aVYAAY')
-        {
-            System.debug('selectedValue'+selectedValue);*/
-            List<AggregateResult> allAccounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
-                                                 From Account Where BillingCountry != null 
+        dataMap = new Map<String, Integer>();
+        System.debug('selectedValueofRecordType'+selectedValue);
+      allAccounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
+                                                 From Account Where BillingCountry != null AND RecordType.ID=:selectedValue
                                                  Group By BillingCountry];
-            
-            For(AggregateResult ag:allAccounts)
-            {
-                acctCountry = String.valueOf(ag.get('Country'));
-                acctCount = Integer.valueOf(ag.get('NumberOfAccounts'));
-                System.debug('acctCountry'+acctCountry);
-                System.debug('acctCount'+acctCount);
-            }
-        
-        If(acctCountry!= NUll && acctCount!=Null)
+        System.debug('allAccounts@@'+allAccounts);
+        For(AggregateResult thisAggregateResult:allAccounts)
         {
-            listOfAllAccounts.add(acctCountry);
-            countOfAllAccounts.add(acctCount);
+            dataMap.put((String)thisAggregateResult.get('Country'), (Integer) thisAggregateResult.get('NumberOfAccounts'));
         }
-            
-        //}
+        System.debug('dataMap@@'+dataMap);
+        dataMapJSON = JSON.serialize(dataMap);
+        System.debug('dataMapJSON'+dataMapJSON);
+           
     }
-    
-    /*@RemoteAction
-global static List<AggregateResult> getAllAccounts()
-{
-List<AggregateResult> accounts = [Select BillingCountry Country, Count(Id) NumberOfAccounts
-From Account Where BillingCountry != null
-Group By BillingCountry];
-return accounts;
-}*/
-    
-    
 }
