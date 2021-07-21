@@ -1,65 +1,71 @@
 <apex:page controller="PageToDisplayPieChartController" showHeader="true" sidebar="false">
-    
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"/>
-    <script type="text/javascript">
+    <apex:outputPanel id="pChart">
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"/>
+        <script type="text/javascript">
         
-    google.charts.load('current', {packages: ['corechart']});
-    google.charts.setOnLoadCallback(drawChart);
-    
-    drawPieChart();
-    /*var accData; 
+        var JSONdata = '{!dataMapJSON}';
+        var JSONdataParsed = JSON.parse(JSONdata, function(key, value));
+        console.log('JSONdataParsed@@@@####',JSONdataParsed);
+        var allAccountsData='{!dataMap}';
+        console.log('@@@@####',allAccountsData);
+        
+        google.charts.load('current', {packages: ['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+        
+        function drawPieChart()
+        {
+            alert('Inside drawPieChart function');
+            drawGooglePieChart();
+        }
+        /*var accData; 
     PageToDisplayPieChartController.getAllAccounts(function(result, event){
         accData  = result; 
     },{escape:true});*/
-       
-    function drawChart() {
         
-        var allAccountsList=new array();
-        allAccountsList='{!listOfAllAccounts}';
+        /*function newFunction()
+    {
+        var allAccountsData='{!allAccounts}';
+    console.log('@@@@',allAccountsData);
+    }*/
         
-        var countOfAllAccounts=new array();
-        countOfAccounts='{!countOfAllAccounts}';
         
-        alert(allAccountsList);
-        alert(countOfAccounts);
-        
-        console.log('allAccountsList',allAccountsList);
-        console.log('countOfAccounts',countOfAccounts);
-        
-        var data = new google.visualization.arrayToDataTable
-        ([
-            ['Country Name','Count'],
-            [allAccountsList,countOfAccounts],
-        ]);
-        console.log('@@@@',data);
-            /*data.addColumn('string', 'Country');
-        data.addColumn('number', 'Number of Accounts');
-        
-        for(i = 0; i< accData.length; i++){
-            data.addRow([accData[i].Country, accData[i].NumberOfAccounts]);
-        }*/
+        function drawChart() {
+            
+            var data = new google.visualization.DataTable();
+            
+            data.addColumn('string', 'Country');
+            data.addColumn('number', 'Number of Accounts');
+            
+            for(i = 0; i< allAccountsData.length; i++)
+            {
+                data.addRow([allAccountsData[i].Country, allAccountsData[i].NumberOfAccounts]);
+                console.log('Country@@@@',allAccountsData[i].Country);
+            }
+            console.log('@@@@',data);
             
             var options = {
-            'title':'Accounts Group by Country',
-            pieHole: 0.4,};
+                'title':'Accounts Group by Country',
+                pieHole: 0.4,};
+            
+            console.log('Chart options are',options)
             
             var chart = new google.visualization.PieChart(document.getElementById('myPieChart'));
             chart.draw(data, options);
-            }
-            
-            </script>
-    <div id="myPieChart" style="width: 900px; height: 450px;"/>
+        }
+        
+        </script>
+        <div id="myPieChart" style="width: 900px; height: 450px;"/>
+    </apex:outputPanel>
     
     <apex:form >
         <apex:pageBlock id="pieChartBlock">
             <apex:pageBlockSection title="Please select Record Type: " collapsible="false">
-                <apex:selectList value="{!selectedValue}" multiselect="false" size="1" >
+                <apex:selectList value="{!selectedValue}" multiselect="false" size="1" onchange="drawPieChart()">
                     <apex:selectOptions value="{!RecordTypes}"/>
-                    <apex:actionSupport event="onchange" onsubmit="drawPieChart" reRender="pieChartBlock"/>
                 </apex:selectList>
             </apex:pageBlockSection>
         </apex:pageBlock>
-        <apex:actionFunction name="drawPieChart" action="{!getAccts}" reRender="pieChartBlock" oncomplete="drawChart();">
+        <apex:actionFunction name="drawGooglePieChart" action="{!getAccts}" oncomplete="drawChart();" reRender="pChart" >
         </apex:actionFunction>
     </apex:form>
 </apex:page>
